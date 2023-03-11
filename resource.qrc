@@ -1,0 +1,21 @@
+<RCC>
+  <qresource prefix="/">
+    <file>views/StockData.qml</file>
+    <file>views/master.qml</file>
+    <file>resources/images/icons/folder.ico</file>
+    <file>resources/images/icons/run.ico</file>
+    <file>resources/images/icons/save.ico</file>
+    <file>resources/images/icons/saveas.ico</file>
+    <file>resources/images/icons/loop.ico</file>
+    <file>resources/images/icons/testcase.ico</file>
+    <file>resources/images/icons/close.ico</file>
+    <file>resources/images/icons/spectrum.ico</file>
+    <file>resources/images/icons/timedomain.ico</file>
+    <file>resources/images/icons/eye.ico</file>
+    <file>resources/images/icons/star.ico</file>
+    <file>resources/images/icons/evm.ico</file>
+    <file>resources/images/icons/sem.ico</file>
+    <file>resources/images/icons/aclr.ico</file>
+    <file>resources/images/icons/5gul.ico</file>
+  </qresource>
+</RCC>

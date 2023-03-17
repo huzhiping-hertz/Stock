@@ -1,7 +1,7 @@
 import pandas as pd
 import tushare as ts
 from sqlalchemy import create_engine ,text
-from DataBase import DataBase
+from models.DataBase import DataBase
 
 class DBPriceModel (DataBase):
 

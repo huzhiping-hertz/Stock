@@ -13,7 +13,6 @@ Item{
 
     Component.onCompleted: {
         stockTable.changeData.connect(handleData)
-        //dataModel.appendRow({"code":"小明", "qfq":"男", "id":"w0000065628743342144321241", "option":true})
     }
 
     function handleData(datastr){  
@@ -22,7 +21,6 @@ Item{
         console.log(records)
         dataModel.clear()
         records.forEach(function(item){
-            //dataModel.appendRow({"code":"小明", "qfq":"男", "id":"w0000065628743342144321241", "option":true})
             dataModel.appendRow(item)
         })
 
@@ -31,7 +29,6 @@ Item{
 
     TableModel{
         id:dataModel
-        //TableModelColumn { display: "close" }
         TableModelColumn { display: "pre_close" }
     }
 

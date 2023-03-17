@@ -1,5 +1,5 @@
 import tushare as ts
-from StockBase import StockBase 
+from models.StockBase import StockBase 
 import time
 
 class Stock (StockBase):
@@ -29,4 +29,5 @@ class Stock (StockBase):
     
     def getQFQInfo(self,tscode,sdate,edate):
         df = ts.pro_bar(ts_code=tscode, adj='qfq', start_date=sdate, end_date=edate)
+        print(df)
         return df

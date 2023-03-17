@@ -23,8 +23,12 @@ class DBQFQ (DataBase):
         df = pd.read_sql_query(text(sql), self.engine_ts.connect())
         return df
     
+    def readData(self,ts_code,startDate,stopDate):
+        sql = "select pre_close from  QFQData where ts_code='"+ts_code+"' and trade_date>= "+startDate+" and trade_date<="+stopDate+" order by trade_date"
+        print(sql)
+        df = pd.read_sql_query(text(sql), self.engine_ts.connect())
+        return df
     
     def writeData(self,df):
         res = df.to_sql('QFQData', self.engine_ts, index=False,if_exists='append', chunksize=5000)
-        print(res)
 

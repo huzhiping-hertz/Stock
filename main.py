@@ -3,19 +3,22 @@ import time
 import shlex
 import sys
 import pandas as pd
-from Stock import Stock;
-from models import DBDaily
-from models import DBBasic
-from models import DBQFQ
-from models import DBPriceModel
+from models.Stock import Stock;
+from models.DBDaily import DBDaily
+from models.DBBasic import DBBasic
+from models.DBQFQ import DBQFQ
+from models.DBModel import DBModel
+from models.DBPriceModel import DBPriceModel
 from DrawLine import DrawLine
+from scipy.stats import pearsonr 
+import numpy as np
+import mmap
 
 def storeQFQData(ts_code,start_date,end_date):
      stock=Stock()
      qfqData=stock.getQFQInfo(tscode=ts_code, sdate=start_date, edate=end_date)
      db=DBQFQ()
      db.writeData(qfqData)
-     print(qfqData)
 
 def storeStockBasic():
      stock=Stock()
@@ -69,11 +72,44 @@ def caculateCor(ts_code,modelId):
 
 
 def main() -> int:
+    #stock=Stock()
+    #df=stock.getBasicData()
+    #print(df)
     #storeDailyData()
-    #storeQFQData(ts_code='000001.SZ', start_date='20201011', end_date='20230222')
+    #storeStockBasic()
+    #storeQFQData(ts_code='000001.SZ', start_date='20201011', end_date='20230224')
+    #storeQFQData(ts_code='000002.SZ', start_date='20201011', end_date='20230224')
     #drawSingleStock(ts_code='000001.SZ',num=200)
-    caculateCor(ts_code='000001.SZ',modelId=1)
-    return 0
+    #caculateCor(ts_code='000001.SZ',modelId=1)
+
+
+     stockObj=DBQFQ()
+     stockDF=stockObj.readData('000001.SZ',"20221001","20230310")
+     
+     
+     
+     
+     modelObj=DBModel()
+     modelDF=modelObj.getDataByName("V")
+     
+     global corr_vals 
+     corr_vals= modelDF.iat[0,1].split(",")
+     corr_vals=list(map(float,corr_vals))
+     
+     stockDF = pd.DataFrame(dict(x=corr_vals))
+     
+     corr_vals=np.array(list(map(float,corr_vals)))
+     
+     print(corr_vals)
+     corr= stockDF.rolling(window=len(corr_vals)).apply(get_correlation)
+     print(corr.values)
+     #print(df)
+     #rs=df.to_json(orient="records")
+     #return rs
+    
+def get_correlation(vals):
+     return pearsonr(vals, corr_vals)[0]
+     
 
 if __name__ == '__main__':
     sys.exit(main()) 

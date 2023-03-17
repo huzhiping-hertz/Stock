@@ -29,7 +29,7 @@ class PandasModel(QAbstractTableModel):
         if role == Qt.DisplayRole:
             return str(self._dataframe.iloc[index.row(), index.column()])
 
-        return None
+        return None 
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
         if role == Qt.DisplayRole:

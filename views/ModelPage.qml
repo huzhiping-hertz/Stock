@@ -32,19 +32,25 @@ ColumnLayout {
             anchors.fill: parent
             spacing: 10
             Control{
-                width: 350
+                width: 50
                 height: parent.height
-                ComboBox {
-                    id:modelNames
+                Label {
+                    
+                    anchors.centerIn: parent
+                    text: "名称"
                 }
             }
-
+            ComboBox {
+                width: 100
+                height: parent.height
+                id:modelNames
+            }
             Control{
                 width: 100
                 height: parent.height
                 Button {
+                    anchors.fill: parent
                     text: "查看"
-                    anchors.centerIn: parent
                     onClicked:{
                         //stockview.changeData(datastr);
                         rschart.removeAllSeries();

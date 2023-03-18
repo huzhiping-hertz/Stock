@@ -6,12 +6,20 @@ import QtQml.Models
 import QtQuick.Controls.Material
 import Qt.labs.qmlmodels 1.0
 
-import RS.Controllers.CaculateController 1.0
+import RS.Controllers.StockController 1.0
+import RS.Controllers.CaculatorController 1.0
+import RS.Controllers.ModelController 1.0
 
 
 ColumnLayout {
     anchors.fill: parent
 
+    StockController{
+        id:"stockCtl"
+    }
+    CaculatorController{
+        id:"caculateCtl"
+    }
     ModelController{
         id:"modelCtl"
     }
@@ -24,6 +32,17 @@ ColumnLayout {
         });
         modelNames.model=names;
         console.log(data);
+
+        var stockstr=stockCtl.getStocks();
+        records=JSON.parse(stockstr)
+        print(stockstr)
+        names=new Array()
+        names.push("全部")
+        records.forEach(function(item,index){
+            names.push(item[0]);
+        });
+        print(names)
+        stockCodes.model=names;
     }
     GroupBox {
         Layout.fillWidth: true
@@ -32,74 +51,86 @@ ColumnLayout {
             anchors.fill: parent
             spacing: 10
             Control{
-                width: 350
+                width: 50
                 height: parent.height
-                ComboBox {
-                    id:modelNames
+                Label {
+                    
+                    anchors.centerIn: parent
+                    text: "代码"
                 }
             }
+                
+            ComboBox {
+                width: 100
+                height: parent.height
+                id:stockCodes
+            }
 
+            
+            Control{
+                width: 50
+                height: parent.height
+                Label {
+                    
+                    anchors.centerIn: parent
+                    text: "数据模型"
+                }
+            }
+            ComboBox {
+                    width: 120
+                height: parent.height
+                id:modelNames
+            }
+            
+
+            
             Control{
                 width: 100
                 height: parent.height
                 Button {
-                    text: "查看"
+                    text: "相关性计算"
                     anchors.centerIn: parent
                     onClicked:{
-                        //stockview.changeData(datastr);
-                        rschart.removeAllSeries();
-                        rschart.axisX(axisX)
-                        rschart.axisY(axisY)
-                    
-                        var datastr=modelCtl.getDataByName(modelNames.currentValue)
-                        console.log(datastr)
-                        var record=JSON.parse(datastr)[0]
-                        var line = rschart.createSeries(ChartView.SeriesTypeLine, record["name"],axisX,axisY);
-                        var vals=record["data"].split(",")
-                        vals.forEach(function(item,index){
-                            line.append(index,item);
-                        })
-                        axisX.min = 0;
-                        axisX.max = vals.length-1;
-                        axisY.min = 0;
-                        axisY.max = 1.2;
-                        axisX.tickCount=vals.length-1;
+                        // var start=String(startDate.text);
+                        // var stop=String(stopDate.text);
+                        // start=start.replace(/-/g,"");
+                        // stop=stop.replace(/-/g,"");
+                        var modelName=modelNames.currentValue;
+
+                        var datastr=caculateCtl.getAllCorrilationData(modelName);
+                        corrTable.changeData(datastr)
 
                     }
                 }
             }
 
+                            
+            Control {
+                width: 150
+                height: parent.height
+                    id:unite
+                    // checked: false
+                    // text: qsTr("归一化(min-max)")
+            }
+            
+            Control {
+                    width: 150
+                    height: parent.height
+                    id:corrshow
+                    // checked: false
+                    // text: qsTr("相关性显示")
+            }
+
         }
     }
- 
-    GroupBox {
+    GroupBox{
         Layout.fillWidth: true
         Layout.preferredHeight: parent.height*0.9
-        ChartView{
-            id:rschart
-            anchors.fill: parent
-            theme: ChartView.ChartThemeDark
-            legend.alignment: Qt.AlignRight
-            ValueAxis {
-                id: axisY
-                gridVisible: true
-                tickInterval: 1
-                gridLineColor: 'grey'
-                labelFormat: "%.2f"
-            }
-
-            ValueAxis {
-                id: axisX
-                gridVisible: true
-                tickInterval:1
-                gridLineColor: 'grey'
-                tickType: ValueAxis.TicksFixed
-                labelFormat: "%d"
-            }
-
+        StockData{
+            id:corrTable
+            sdata:""
         }
     }
-
 
 }
 

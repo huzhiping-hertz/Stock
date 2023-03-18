@@ -225,7 +225,7 @@ ColumnLayout {
                         axisX.max = num-1;
                         axisY.min = 0;
                         axisY.max = 1.3*ymax;
-                        axisX.tickCount=num;
+                        axisX.tickCount=num/10;
                         if(unite.checked==true)
                         {
                             axisY.max=1.2
@@ -273,7 +273,7 @@ ColumnLayout {
             ValueAxis {
                 id: axisX
                 gridVisible: true
-                tickInterval:1
+                tickInterval:5
                 gridLineColor: "#33c0c0c0"
                 tickType: ValueAxis.TicksFixed
                 labelFormat: "%d"

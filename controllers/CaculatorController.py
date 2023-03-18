@@ -42,5 +42,50 @@ class CaculatorController(QObject):
         return pearsonr(vals, corr_vals)[0]
         
 
-
+    @Slot(str,str,result=str)
+    def getCorrilationData(self,ts_code,modelName):
+        db=DBModel()
+        df=db.getDataByName(modelName)
+        mdata=df.iloc[0,1].split(",")
+        modelDatas=list(map(float,mdata))
+        modelDF=pd.DataFrame({"model":modelDatas})
+        #print(modelDF)
+        db=DBQFQ()
+        df=db.readLastData(ts_code,len(modelDatas))
+        #print(df)
+        df=pd.merge(modelDF,df,left_index=True,right_index=True)
+        rs=df.corr(method='pearson')
+        #print(rs.iloc[[0],[1:2]])
+        print(rs.iloc[0:1, 1:])
+        return rs.iloc[0:1, 1:]
+    
+    @Slot(str,result=str)
+    def getAllCorrilationData(self,modelName):
+        db=DBModel()
+        df=db.getDataByName(modelName)
+        mdata=df.iloc[0,1].split(",")
+        modelDatas=list(map(float,mdata))
+        modelDF=pd.DataFrame({"model":modelDatas})
+        #print(modelDF)
+        
+        db=DBQFQ()
+        stocks=db.getStocks().values
+        frames =[]
+        names=[]
+        for item in stocks:
+            df=db.readLastData(item[0],len(modelDatas))
+            df=pd.merge(modelDF,df,left_index=True,right_index=True)
+            rs=df.corr(method='pearson')
+            rs= rs.iloc[0:1, 1:]
+            frames.append(rs)
+            names.append(item[0])
+            print(rs)
+        rs=pd.concat(frames,ignore_index=True)
+        rs=rs.round(2)
+        codeDF=pd.DataFrame({"code":names})
+        rs=rs.merge(codeDF,left_index=True,right_index=True)
+        print(rs)
+        rs=rs.to_json(orient="records")
+        print(rs)
+        return rs
         

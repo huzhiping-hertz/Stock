@@ -83,30 +83,52 @@ def main() -> int:
     #caculateCor(ts_code='000001.SZ',modelId=1)
 
 
-     stockObj=DBQFQ()
-     stockDF=stockObj.readData('000001.SZ',"20221001","20230310")
+     # stockObj=DBQFQ()
+     # stockDF=stockObj.readData('000001.SZ',"20221001","20230310")
      
+     # modelObj=DBModel()
+     # modelDF=modelObj.getDataByName("V")
      
+     # global corr_vals 
+     # corr_vals= modelDF.iat[0,1].split(",")
+     # corr_vals=list(map(float,corr_vals))
      
+     # stockDF = pd.DataFrame(dict(x=corr_vals))
      
-     modelObj=DBModel()
-     modelDF=modelObj.getDataByName("V")
+     # corr_vals=np.array(list(map(float,corr_vals)))
      
-     global corr_vals 
-     corr_vals= modelDF.iat[0,1].split(",")
-     corr_vals=list(map(float,corr_vals))
-     
-     stockDF = pd.DataFrame(dict(x=corr_vals))
-     
-     corr_vals=np.array(list(map(float,corr_vals)))
-     
-     print(corr_vals)
-     corr= stockDF.rolling(window=len(corr_vals)).apply(get_correlation)
-     print(corr.values)
+     # print(corr_vals)
+     # corr= stockDF.rolling(window=len(corr_vals)).apply(get_correlation)
+     # print(corr.values)
      #print(df)
      #rs=df.to_json(orient="records")
      #return rs
-    
+     db=DBModel()
+     df=db.getDataByName("V")
+     mdata=df.iloc[0,1].split(",")
+     modelDatas=list(map(float,mdata))
+     modelDF=pd.DataFrame({"model":modelDatas})
+     #print(modelDF)
+     
+     db=DBQFQ()
+     stocks=db.getStocks().values
+     frames =[]
+     names=[]
+     for item in stocks:
+          df=db.readLastData(item[0],len(modelDatas))
+          df=pd.merge(modelDF,df,left_index=True,right_index=True)
+          rs=df.corr(method='pearson')
+          rs= rs.iloc[0:1, 1:]
+          frames.append(rs)
+          names.append(item[0])
+          print(rs)
+     rs=pd.concat(frames,ignore_index=True)
+     codeDF=pd.DataFrame({"code":names})
+     rs=rs.merge(codeDF,left_index=True,right_index=True)
+     print(rs)
+     rs=rs.to_json(orient="records")
+     print(rs)
+     
 def get_correlation(vals):
      return pearsonr(vals, corr_vals)[0]
      

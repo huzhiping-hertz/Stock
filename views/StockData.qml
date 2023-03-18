@@ -16,9 +16,7 @@ Item{
     }
 
     function handleData(datastr){  
-        console.log(datastr)
         var records=JSON.parse(datastr)
-        console.log(records)
         dataModel.clear()
         records.forEach(function(item){
             dataModel.appendRow(item)
@@ -29,7 +27,9 @@ Item{
 
     TableModel{
         id:dataModel
-        TableModelColumn { display: "pre_close" }
+        TableModelColumn { display: "code"}
+        TableModelColumn { display: "pre_close"}
+        TableModelColumn { display: "high"}
     }
 
     HorizontalHeaderView {
@@ -37,7 +37,7 @@ Item{
         width: parent.width
         syncView: tableView
         anchors.left: tableView.left
-        model:[ 'QFQ']
+        model:[ 'Code','Pre_Close','High']
         delegate:Rectangle{
             color: "#666666"
             implicitWidth: 100
@@ -95,6 +95,7 @@ Item{
                 font.pointSize: 12
                 color: "white"
             }
+
         }
 
     }

@@ -103,36 +103,11 @@ ApplicationWindow {
             }
         }
         GroupBox{
-            //anchors.fill: parent
-            ColumnLayout {
-                anchors.fill: parent
-                Rectangle {
-                    color: 'green'
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: parent.height*0.1
-                    Text {
-                        anchors.centerIn: parent
-                        text: parent.width + 'x' + parent.height
-                    }
-                }
-                Rectangle {
-                    color: 'green'
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: parent.height*0.3
-                    Text {
-                        anchors.centerIn: parent
-                        text: parent.width + 'x' + parent.height
-                    }
-                }
-                Rectangle {
-                    color: 'green'
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: parent.height*0.7
-                    Text {
-                        anchors.centerIn: parent
-                        text: parent.width + 'x' + parent.height
-                    }
-                }
+            
+            anchors.fill: parent
+            
+            CaculatePage{
+
             }
         }
     }

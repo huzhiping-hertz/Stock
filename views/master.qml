@@ -72,11 +72,11 @@ ApplicationWindow {
         id: bar
         width: parent.width
         TabButton {
-            text: qsTr("数据")
+            text: qsTr("数据分析")
 
         }
         TabButton {
-            text: qsTr("模型")
+            text: qsTr("模型查看")
         }
         TabButton {
             text: qsTr("批量计算")

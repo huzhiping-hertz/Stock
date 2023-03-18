@@ -7,7 +7,7 @@ class DBModel (DataBase):
 
     def __init__(self):
         DataBase.__init__(self)
-
+    
     def getData(self):
         sql = "select name,data from ModelData"
         print(sql)

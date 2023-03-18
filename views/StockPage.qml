@@ -31,11 +31,21 @@ ColumnLayout {
         });
         modelNames.model=names;
         console.log(data);
+
+        var stockstr=stockCtl.getStocks();
+        records=JSON.parse(stockstr)
+        print(stockstr)
+        names=new Array()
+        records.forEach(function(item,index){
+            names.push(item[0]);
+        });
+        print(names)
+        stockCodes.model=names;
     }
     GroupBox {
         Layout.fillWidth: true
         Layout.preferredHeight: parent.height*0.1
-        Row{
+        RowLayout{
             anchors.fill: parent
             spacing: 10
             Control{
@@ -52,8 +62,8 @@ ColumnLayout {
                 TextField {
                     id:startDate
                     anchors.centerIn: parent
-                    text:"2023-02-01"
-                    placeholderText: qsTr("2023-03-01")
+                    text:"2022-02-01"
+                    placeholderText: qsTr("2022-03-01")
                 }
             }
             Control{
@@ -75,25 +85,22 @@ ColumnLayout {
                 }
             }
             Control{
-                width: 120
+                width: 50
                 height: parent.height
                 Label {
                     
                     anchors.centerIn: parent
-                    text: "代码(逗号分割)"
+                    text: "代码"
                 }
             }
-            Control{
+                
+            ComboBox {
                 width: 300
                 height: parent.height
-                TextField {
-                    id:stockCodes
-                    width:parent.width
-                    anchors.centerIn: parent
-                    text:"000001.SZ,000002.SZ"
-                    placeholderText: qsTr("000001.SZ,000002.SZ")
-                }
+                id:stockCodes
             }
+
+            
             Control{
                 width: 50
                 height: parent.height
@@ -103,32 +110,29 @@ ColumnLayout {
                     text: "数据模型"
                 }
             }
-            Control{
-                width: 120
+            ComboBox {
+                    width: 120
                 height: parent.height
-                ComboBox {
-                    id:modelNames
+                id:modelNames
+            }
+            
+                
+            CheckBox {
+                    width: 150
+                height: parent.height
+                    id:unite
+                    checked: false
+                    text: qsTr("归一化(min-max)")
                 }
-            }
-            Control{
-                width: 150
-                height: parent.height
-                CheckBox {
-                        id:unite
-                        checked: false
-                        text: qsTr("归一化(min-max)")
-                    }
-            }
-            Control{
-                width: 150
-                height: parent.height
-                CheckBox {
-                        id:corrshow
-                        checked: false
-                        text: qsTr("相关性显示")
-                    }
-            }
-
+            
+            CheckBox {
+                    width: 150
+                    height: parent.height
+                    id:corrshow
+                    checked: false
+                    text: qsTr("相关性显示")
+                }
+            
             Control{
                 width: 100
                 height: parent.height
@@ -139,10 +143,11 @@ ColumnLayout {
 
 
                         //stockview.changeData(datastr);
-                        stockLines.removeAllSeries();
-                        stockLines.axisX(axisX)
-                        stockLines.axisY(axisY)
-
+                        //chart.removeAllSeries();
+                        chart.axisX(axisX)
+                        chart.axisY(axisY)
+                        stockLine.removePoints(0,stockLine.count)
+                        corrLine.removePoints(0,corrLine.count)
                         var xmax;
                         var ymax=0;
 
@@ -154,13 +159,15 @@ ColumnLayout {
                         var num=0;
                         var start=String(startDate.text);
                         var stop=String(stopDate.text);
-                        var stocks=stockCodes.text.split(",")
+                        print(stockCodes.currentValue)
+                        var stocks=new Array();
+                        stocks.push(stockCodes.currentValue)
                         stocks.forEach(function(item){
 
-
+                            print(item)
 
                             var datastr=stockCtl.getData(item,start.replace(/-/g,""),stop.replace(/-/g,""))
-                            var line = stockLines.createSeries(ChartView.SeriesTypeLine, item,axisX,axisY);
+                            //var line = stockLines.createSeries(ChartView.SeriesTypeLine, item,axisX,axisY);
                             //var scatter = stockLines.createSeries(ChartView.SeriesTypeScatter, "",axisX,axisY);
                             console.log(datastr)
                             var records=JSON.parse(datastr)
@@ -184,25 +191,28 @@ ColumnLayout {
                                     }
                                 })
                                 records.forEach(function(item,index){
-                                    line.append(index,(item["pre_close"]-min_price)/(max_price-min_price));
+                                    //line.append(index,(item["pre_close"]-min_price)/(max_price-min_price));
+                                    stockLine.append(index,(item["pre_close"]-min_price)/(max_price-min_price));
                                 })
+                                
 
                                 if(corrshow.checked==true)
                                 {
                                     var corrstr=caculateCtl.correlation_pearson(item,start.replace(/-/g,""),stop.replace(/-/g,""),"pre_close",modelNames.currentValue);
                                     //console.log(corrstr);
                                     var corrpoints=JSON.parse(corrstr)
-                                    var corrline = stockLines.createSeries(ChartView.SeriesTypeLine, "Corr-"+item,axisX,axisY);
+                                    //var corrline = stockLines.createSeries(ChartView.SeriesTypeLine, "Corr-"+item,axisX,axisY);
                                     corrpoints.forEach(function(item,index){
-                                        corrline.append(index,item["pre_close"]);
+                                        corrLine.append(index,item["pre_close"]);
                                     })
                                 }
 
                             }
                             else{
                                 records.forEach(function(item,index){
-                                    line.append(index,item["pre_close"]);
+                                    //line.append(index,item["pre_close"]);
                                     //scatter.append(index,item["pre_close"]);
+                                    stockLine.append(index,item["pre_close"]);
                                     if(item["pre_close"]>ymax)
                                     {
                                         ymax=item["pre_close"];
@@ -247,10 +257,11 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.preferredHeight: parent.height*0.9
         ChartView{
-            id:stockLines
+            id:chart
             anchors.fill: parent
             theme: ChartView.ChartThemeDark
-            legend.alignment: Qt.AlignRight
+            legend.visible:false
+
             ValueAxis {
                 id: axisY
                 gridVisible: true
@@ -266,6 +277,74 @@ ColumnLayout {
                 gridLineColor: "#33c0c0c0"
                 tickType: ValueAxis.TicksFixed
                 labelFormat: "%d"
+            }
+
+            ToolTip{
+                id:toolTip
+                delay: 4
+                font.family: "微软雅黑"
+                font.bold: true
+                font.pointSize: 13
+            }
+            LineSeries{
+                id:stockLine
+                axisX: axisX
+                axisY: axisY
+                onHovered: {
+                    var chartPosition = chart.mapToPosition(point,stockLine)
+                    myCanvas.xx = chartPosition.x
+                    myCanvas.yy = chartPosition.y
+                    console.log(myCanvas.xx)
+                    console.log(myCanvas.yy)
+                    console.log(state)
+                    toolTip.visible = state
+                    toolTip.text = "X："+point.x.toFixed(0)+"  Y："+point.y.toFixed(2)
+                    toolTip.x = chartPosition.x+10
+                    toolTip.y = chartPosition.y-40
+                    var d = new Date()
+                    myCanvas.requestPaint()
+                }
+            }
+            LineSeries{
+                id:corrLine
+                axisX: axisX
+                axisY: axisY
+                onHovered: {
+                    var chartPosition = chart.mapToPosition(point,corrLine)
+                    myCanvas.xx = chartPosition.x
+                    myCanvas.yy = chartPosition.y
+                    toolTip.visible = state
+                    toolTip.text = "X："+point.x.toFixed(0)+"  Y："+point.y.toFixed(2)
+                    toolTip.x = chartPosition.x+10
+                    toolTip.y = chartPosition.y-40
+                    var d = new Date()
+                    myCanvas.requestPaint()
+                }
+            }
+            Canvas{
+                id:myCanvas
+                anchors.fill: chart
+                property double xx: 0
+                property double yy: 0
+                onPaint: {
+                    if(xx+yy>0){
+                        var ctx = getContext("2d")//绘制十字交叉的竖线
+                        ctx.clearRect(0,0,parent.width,parent.height)
+                        ctx.strokeStyle = '#66ffff00'
+                        ctx.lineWidth = 3
+                        ctx.beginPath()
+                        ctx.moveTo(xx,chart.plotArea.y)
+                        ctx.lineTo(xx,chart.plotArea.height+chart.plotArea.y)
+                        ctx.stroke()
+                        ctx.beginPath()//绘制十字交叉的横线
+                        ctx.moveTo(chart.plotArea.x,yy)
+                        ctx.lineTo(chart.plotArea.x+chart.plotArea.width,yy)
+                        ctx.stroke()
+                    }else{//鼠标离开图表区域时，清除十字线
+                        var ctx = getContext("2d")
+                        ctx.clearRect(0,0,parent.width,parent.height)
+                    }
+                }
             }
 
         }

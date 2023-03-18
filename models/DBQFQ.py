@@ -8,6 +8,11 @@ class DBQFQ (DataBase):
     def __init__(self):
         DataBase.__init__(self)
 
+    def getStocks(self):
+        sql = "select distinct ts_code from QFQData"
+        df = pd.read_sql_query(text(sql), self.engine_ts.connect())
+        return df
+    
     def readData(self):
         sql = "SELECT * FROM QFQData LIMIT 20"
         df = pd.read_sql_query(text(sql), self.engine_ts.connect())

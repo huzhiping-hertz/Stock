@@ -1,3 +1,28 @@
 vscode
 右下角选择python interpreter
 ~/miniconda3/bin/python
+
+
+FrontEnd 配置
+
+npm install pnpm -g 
+pnpm install vite
+
+
+
+
+BackEnd 配置
+
+环境使用
+miniconda
+
+webapi 环境配置
+
+pip3 install fastapi
+pip3 install "uvicorn[standard]"
+
+运行
+
+conda activate base
+
+uvicorn main:app --reload

@@ -1,9 +1,13 @@
 from fastapi import APIRouter
 from controllers.StockController import StockController
+import numpy as np
+import pandas as pd
+from scipy.stats import pearsonr 
 
 from models.DBBasic import DBBasic;
 from models.DBQFQ import DBQFQ
 from models.Stock import Stock;
+from models.DBModel import DBModel
 
 router = APIRouter()
 
@@ -15,10 +19,26 @@ def get_stock_codes():
     rs=df.to_json(orient="records")
     return rs
 
-@router.get("/stock/qfq/{code}/{start}/{stop}")
-def get_model_by_name(code,start,stop):
-    ctl =StockController()
-    rs=ctl.getData(code,start,stop)
+##获取股票信息
+@router.get("/stock/qfq/{code}/{start}/{stop}/{mname}")
+def get_model_by_name(code,start,stop,mname):
+    model=DBQFQ()
+    df=model.readData(code,start,stop)
+    
+    modelObj=DBModel()
+    modelDF=modelObj.getDataByName(mname)
+
+    global corr_vals 
+    corr_vals= modelDF.iat[0,1].split(",")
+    corr_vals=list(map(float,corr_vals))
+    corr_vals=np.array(list(map(float,corr_vals)))
+    maxval=df.loc[:,"pre_close"].mean()
+    corr= df.loc[:,"pre_close"].rolling(window=len(corr_vals)).apply(get_correlation)
+    
+    df=pd.merge(df,corr,left_index=True,right_index=True)
+    df=df.fillna(0)
+    print(df)
+    rs=df.to_json(orient="values")
     return rs
 
 ##数据同步
@@ -28,3 +48,28 @@ def syn_stock_data(code, start, stop):
     qfqData=stock.getQFQInfo(code, start, stop)
     db=DBQFQ()
     db.writeData(qfqData)
+    
+def get_correlation(vals):
+    return round(pearsonr(vals, corr_vals)[0],2)
+
+##计算相关性
+@router.get("/stock/corr/{code}/{mname}")
+def get_stock_corr(code,mname):
+
+    modelObj=DBModel()
+    modelDF=modelObj.getDataByName(mname)
+    global corr_vals 
+    corr_vals= modelDF.iat[0,1].split(",")
+    corr_vals=list(map(float,corr_vals))
+    corr_vals=np.array(list(map(float,corr_vals)))
+    
+    model=DBQFQ()
+    df=model.readLastData(code,len(corr_vals))
+    
+    corr= df.loc[:,"pre_close"].rolling(window=len(corr_vals)).apply(get_correlation)
+    
+    df=pd.merge(df,corr,left_index=True,right_index=True)
+    df=df.fillna(0)
+
+    rs=df.iloc[-1].to_json()
+    return rs

@@ -70,6 +70,11 @@ function onSyncData()
 }
 
 onMounted(()=>{
+    var now=new Date();
+    var month=(now.getMonth()+1)>9?now.getMonth()+1:"0"+(now.getMonth()+1);
+    var date=now.getDate()>9?now.getDate():"0"+now.getDate();
+    dateStop.value=now.getFullYear()+""+month+""+date;
+    dateStart.value=now.getFullYear()-1+""+month+""+date;
 
     getStockCodes().then((response)=>{
 

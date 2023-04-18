@@ -19,7 +19,7 @@ class DBQFQ (DataBase):
         return df
     
     def readLastData(self,ts_code,num):
-        sql = "select pre_close,high from (SELECT * FROM QFQData where ts_code='"+ts_code+"' order by trade_date desc limit "+str(num)+") tmp order by trade_date"
+        sql = "select trade_date,pre_close from (SELECT * FROM QFQData where ts_code='"+ts_code+"' order by trade_date desc limit "+str(num)+") tmp order by trade_date"
         df = pd.read_sql_query(text(sql), self.engine_ts.connect())
         return df
 
@@ -29,6 +29,12 @@ class DBQFQ (DataBase):
         return df
     
     def readData(self,ts_code,startDate,stopDate):
+        sql = "select trade_date,open,close,high,low,pre_close from  QFQData where ts_code='"+ts_code+"' and trade_date>= "+startDate+" and trade_date<="+stopDate+" order by trade_date"
+        df = pd.read_sql_query(text(sql), self.engine_ts.connect())
+        return df
+    
+    
+    def readQFQData(self,ts_code,startDate,stopDate):
         sql = "select pre_close from  QFQData where ts_code='"+ts_code+"' and trade_date>= "+startDate+" and trade_date<="+stopDate+" order by trade_date"
         print(sql)
         df = pd.read_sql_query(text(sql), self.engine_ts.connect())

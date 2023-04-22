@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from controllers.StockController import StockController
 import numpy as np
 import pandas as pd
-from scipy.stats import pearsonr 
+from scipy.stats import pearsonr,spearmanr,kendalltau
 
 from models.DBBasic import DBBasic;
 from models.DBQFQ import DBQFQ
@@ -32,10 +32,13 @@ def get_model_by_name(code,start,stop,mname):
     corr_vals= modelDF.iat[0,1].split(",")
     corr_vals=list(map(float,corr_vals))
     corr_vals=np.array(list(map(float,corr_vals)))
-    maxval=df.loc[:,"pre_close"].mean()
-    corr= df.loc[:,"pre_close"].rolling(window=len(corr_vals)).apply(get_correlation)
+    pearsonr_corr= df.loc[:,"close"].rolling(window=len(corr_vals)).apply(get_pearsonr)
+    spearmanr_corr= df.loc[:,"close"].rolling(window=len(corr_vals)).apply(get_spearmanr)
+    kendalltau_corr= df.loc[:,"close"].rolling(window=len(corr_vals)).apply(get_kendalltau)
+    df=pd.merge(df,pearsonr_corr,left_index=True,right_index=True)
+    df=pd.merge(df,spearmanr_corr,left_index=True,right_index=True)
+    df=pd.merge(df,kendalltau_corr,left_index=True,right_index=True)
     
-    df=pd.merge(df,corr,left_index=True,right_index=True)
     df=df.fillna(0)
     print(df)
     rs=df.to_json(orient="values")
@@ -49,8 +52,12 @@ def syn_stock_data(code, start, stop):
     db=DBQFQ()
     db.writeData(qfqData)
     
-def get_correlation(vals):
+def get_pearsonr(vals):
     return round(pearsonr(vals, corr_vals)[0],2)
+def get_spearmanr(vals):
+    return round(spearmanr(vals, corr_vals)[0],2)
+def get_kendalltau(vals):
+    return round(kendalltau(vals, corr_vals)[0],2)
 
 ##计算相关性
 @router.get("/stock/corr/{code}/{mname}")

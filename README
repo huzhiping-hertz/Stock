@@ -8,6 +8,8 @@ FrontEnd 配置
 npm install pnpm -g 
 pnpm install vite
 
+npm install 
+npm run dev
 
 
 

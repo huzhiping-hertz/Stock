@@ -29,7 +29,7 @@ class DBQFQ (DataBase):
         return df
     
     def readData(self,ts_code,startDate,stopDate):
-        sql = "select trade_date,open,close,high,low,pre_close from  QFQData where ts_code='"+ts_code+"' and trade_date>= "+startDate+" and trade_date<="+stopDate+" order by trade_date"
+        sql = "select trade_date,open,close,high,low from  QFQData where ts_code='"+ts_code+"' and trade_date>= "+startDate+" and trade_date<="+stopDate+" order by trade_date"
         df = pd.read_sql_query(text(sql), self.engine_ts.connect())
         return df
     

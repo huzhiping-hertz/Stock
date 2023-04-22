@@ -7,10 +7,12 @@
 
                 <el-form :inline="true" :model="formInline" class="demo-form-inline">
                     <el-form-item label="开始时间">
-                        <el-date-picker v-model="dateStart" type="date" placeholder="Pick a day" size="large" value-format="YYYYMMDD"/>
+                        <el-date-picker v-model="dateStart" type="date" placeholder="Pick a day" size="large"
+                            value-format="YYYYMMDD" />
                     </el-form-item>
                     <el-form-item label="结束时间">
-                        <el-date-picker v-model="dateStop" type="date" placeholder="Pick a day" size="large" value-format="YYYYMMDD"/>
+                        <el-date-picker v-model="dateStop" type="date" placeholder="Pick a day" size="large"
+                            value-format="YYYYMMDD" />
                     </el-form-item>
                     <el-form-item label="股票代码">
                         <el-select v-model="scode" placeholder="Select" size="large">
@@ -19,7 +21,8 @@
                     </el-form-item>
                     <el-form-item label="数据模型">
                         <el-select v-model="cmodel" placeholder="Select" size="large">
-                            <el-option v-for="item in modelOptions" :key="item.value" :label="item.label" :value="item.value" />
+                            <el-option v-for="item in modelOptions" :key="item.value" :label="item.label"
+                                :value="item.value" />
                         </el-select>
                     </el-form-item>
                     <el-form-item>
@@ -39,7 +42,7 @@
             </CardBox> -->
 
             <CardBox class="mb-6">
-                <div ref="domChart" style="height: 500px;"></div>
+                <div ref="domChart" style="height: 600px;"></div>
             </CardBox>
 
         </SectionMain>
@@ -55,15 +58,16 @@ import CardBox from "@/components/CardBox.vue";
 import CandalStick from "@/components/Stocks/CandalStick.vue";
 import { getStockCodes, getStockData } from '@/api/StockCodesApi';
 import { getModels, getModelByName } from '@/api/DataModel';
-
+import { RouterView, useRouter } from "vue-router";
 import { ref, unref, watch, computed, onMounted } from 'vue'
 
 const dateStart = ref('')
 const dateStop = ref('')
 const scode = ref()
-const cmodel=ref()
+const cmodel = ref()
 const options = ref([]);
 const modelOptions = ref([]);
+const router = useRouter();
 
 const props = defineProps({
     data: {
@@ -75,11 +79,14 @@ const props = defineProps({
 const domChart = ref(null);
 let chart;
 
+let modelMin=0;
+let modelMax=0;
+let pts;
 
 
 function onSearch() {
 
-    getStockData(scode.value,dateStart.value,dateStop.value,cmodel.value).then((response) => {
+    getStockData(scode.value, dateStart.value, dateStop.value, cmodel.value).then((response) => {
 
         const rawData = JSON.parse(response.data)
         //初始化图表
@@ -103,27 +110,35 @@ function onSearch() {
         }
 
         const dates = rawData.map(function (item) {
+            return item[0].substr(0, 4) + "-" + item[0].substr(4, 2) + "-" + item[0].substr(6, 2);
+        });
+        const datestr = rawData.map(function (item) {
             return item[0];
         });
+
         const data = rawData.map(function (item) {
             return [+item[1], +item[2], +item[3], +item[4]];
         });
-        const predata = rawData.map(function (item) {
-            return item[5];
+
+        const pcorr = rawData.map(function (item) {
+            return item[5].toFixed(2);
         });
-        const corr = rawData.map(function (item) {
+        const scorr = rawData.map(function (item) {
             return item[6].toFixed(2);
+        });
+        const kcorr = rawData.map(function (item) {
+            return item[7].toFixed(2);
         });
 
         option = {
             legend: {
-                data: ['日K', '5日均线', '10日均线', '20日均线', '30日均线','前复权','相关性分析'],
+                data: ['日K', '5日均线', '10日均线', '20日均线', '皮尔逊相关性', '斯皮尔曼相关性', '肯德尔相关性'],
                 inactiveColor: '#777'
             },
             tooltip: {
                 trigger: 'axis',
                 axisPointer: {
-                    animation: false,
+                    animation: true,
                     type: 'cross',
                     lineStyle: {
                         color: '#376df4',
@@ -132,39 +147,95 @@ function onSearch() {
                     }
                 }
             },
-            xAxis: {
-                type: 'category',
-                data: dates,
-                axisLine: { lineStyle: { color: '#8392A5' } }
-            },
-            yAxis: {
-                scale: true,
-                axisLine: { lineStyle: { color: '#8392A5' } },
-                splitLine: { show: false }
-            },
-            grid: {
-                bottom: 80
+            axisPointer: {
+                link: [
+                    {
+                        xAxisIndex: 'all'
+                    }
+                ],
+                label: {
+                    backgroundColor: '#777'
+                }
             },
             dataZoom: [
                 {
-                    textStyle: {
-                        color: '#8392A5'
-                    },
-                    handleIcon:
-                        'path://M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
-                    dataBackground: {
-                        areaStyle: {
-                            color: '#8392A5'
-                        },
-                        lineStyle: {
-                            opacity: 0.8,
-                            color: '#8392A5'
-                        }
-                    },
-                    brushSelect: true
+                    type: 'inside',
+                    xAxisIndex: [0, 1],
                 },
                 {
-                    type: 'inside'
+                    show: true,
+                    xAxisIndex: [0, 1],
+                    type: 'slider',
+
+                }
+            ],
+            grid: [
+                {
+                    left: 50,
+                    right: 50,
+                    height: '35%'
+                },
+                {
+                    left: 50,
+                    right: 50,
+                    top: '55%',
+                    height: '35%'
+                }
+            ],
+            toolbox: {
+                feature: {
+
+                
+                    brush: {
+                        type: ['lineX']
+                    },
+                    myModel:{
+                        show:true,
+                        title: "Save Data As Model",
+                        icon: 'path://M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                        onclick: function(){
+                            
+                            router.push("/Model")
+                        }
+                    },    
+                }
+            },
+            brush: {
+
+                xAxisIndex: 'all',
+                brushLink: 'all',
+                outOfBrush: {
+                    colorAlpha: 0.1
+                }
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    boundaryGap: false,
+                    axisLine: { lineStyle: { color: '#8392A5' } },
+                    data: dates
+                },
+                {
+                    gridIndex: 1,
+                    type: 'category',
+                    boundaryGap: false,
+                    axisLabel: { show: false },
+                    axisLine: { show: false },
+                    axisTick: { show: false },
+                    splitLine: { show: false }
+
+                }
+            ],
+            yAxis: [
+                {
+                    scale: true,
+                    axisLine: { lineStyle: { color: '#8392A5' } },
+                    splitLine: { show: true }
+                },
+                {
+                    gridIndex: 1,
+                    type: 'value',
+                    inverse: false
                 }
             ],
             series: [
@@ -210,64 +281,90 @@ function onSearch() {
                     }
                 },
                 {
-                    name: '30日均线',
+                    name: '皮尔逊相关性',
                     type: 'line',
-                    data: calculateMA(30, data),
-                    smooth: true,
-                    showSymbol: false,
-                    lineStyle: {
-                        width: 1
-                    }
-                },
-                {
-                    name: '前复权',
-                    type: 'line',
-                    data: predata,
-                    smooth: true,
-                    showSymbol: true,
-                    lineStyle: {
-                        width: 1
-                    }
-                },
-                {
-                    name: '相关性分析',
-                    type: 'line',
-                    data: corr,
-                    smooth: true,
-                    showSymbol: true,
+                    xAxisIndex: 1,
+                    yAxisIndex: 1,
+                    symbolSize: 5,
                     lineStyle: {
                         width: 1
                     },
                     markPoint: {
-                            data: [
-                                { type: 'max', name: 'Max' },
-                                { type: 'min', name: 'Min' }
-                            ]
-                    }
+                        data: [
+                            { type: 'max', name: 'Max' },
+                            { type: 'min', name: 'Min' }
+                        ]
+                    },
+                    data: pcorr,
+                },
+                {
+                    name: '斯皮尔曼相关性',
+                    type: 'line',
+                    xAxisIndex: 1,
+                    yAxisIndex: 1,
+                    symbolSize: 5,
+                    lineStyle: {
+                        width: 1
+                    },
+                    markPoint: {
+                        data: [
+                            { type: 'max', name: 'Max' },
+                            { type: 'min', name: 'Min' }
+                        ]
+                    },
+                    data: scorr,
+                },
+                {
+                    name: '肯德尔相关性',
+                    type: 'line',
+                    xAxisIndex: 1,
+                    yAxisIndex: 1,
+                    symbolSize: 5,
+                    lineStyle: {
+                        width: 1
+                    },
+                    markPoint: {
+                        data: [
+                            { type: 'max', name: 'Max' },
+                            { type: 'min', name: 'Min' }
+                        ]
+                    },
+                    data: kcorr,
                 }
             ]
         };
-
         option && chart.setOption(option);
 
+        chart.on('brushSelected', function (params) {
+            // this shows an empty array - while it should be the range selected
+            pts=params.batch[0].selected[0].dataIndex;
+            modelMin=datestr[pts[0]];
+            modelMax=datestr[pts[pts.length-1]]
+            console.log(modelMin+"-"+modelMax)
+        });
 
     })
 
 }
 
+
+
 onMounted(() => {
 
-    var now=new Date();
-    var month=(now.getMonth()+1)>9?now.getMonth()+1:"0"+(now.getMonth()+1);
-    var date=now.getDate()>9?now.getDate():"0"+now.getDate();
-    dateStop.value=now.getFullYear()+""+month+""+date;
-    dateStart.value=now.getFullYear()-1+""+month+""+date;
+    var now = new Date();
+    var month = (now.getMonth() + 1) > 9 ? now.getMonth() + 1 : "0" + (now.getMonth() + 1);
+    var date = now.getDate() > 9 ? now.getDate() : "0" + now.getDate();
+    dateStop.value = now.getFullYear() + "" + month + "" + date;
+    dateStart.value = now.getFullYear() - 1 + "" + month + "" + date;
+
+
     getStockCodes().then((response) => {
 
         const obj = JSON.parse(response.data);
         obj.forEach(item => {
             options.value.push({ "value": item.ts_code, "label": item.name })
         });
+        scode.value = options.value[0].value
     });
 
     getModels().then((response) => {
@@ -275,6 +372,7 @@ onMounted(() => {
         obj.forEach(item => {
             modelOptions.value.push({ "value": item.name, "label": item.name })
         });
+        cmodel.value = modelOptions.value[0].value
     });
 
 

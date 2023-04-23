@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory } from "vue-router";
 import HomeView from "@/views/HomeView.vue";
 import DataView from "@/views/DataView.vue";
 import ModelView from "@/views/ModelView.vue";
+import ModelCreateView from "@/views/ModelCreateView.vue";
 import ResultView from "@/views/ResultView.vue";
 
 const routes = [
@@ -28,6 +29,14 @@ const routes = [
     path: "/model",
     name: "Model",
     component: ModelView,
+  },
+  {
+    meta: {
+      title: "ModelCreate",
+    },
+    path: "/model/create",
+    name: "ModelCreate",
+    component: ModelCreateView,
   },
   {
     meta: {

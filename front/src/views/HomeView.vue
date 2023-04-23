@@ -57,7 +57,7 @@ import SectionMain from "@/components/SectionMain.vue";
 import CardBox from "@/components/CardBox.vue";
 import CandalStick from "@/components/Stocks/CandalStick.vue";
 import { getStockCodes, getStockData } from '@/api/StockCodesApi';
-import { getModels, getModelByName } from '@/api/DataModel';
+import { getModels, getModelById,saveModel } from '@/api/DataModel';
 import { RouterView, useRouter } from "vue-router";
 import { ref, unref, watch, computed, onMounted } from 'vue'
 
@@ -195,7 +195,13 @@ function onSearch() {
                         icon: 'path://M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
                         onclick: function(){
                             
-                            router.push("/Model")
+                            var mname=options[""];
+                            var mdata="";
+                            saveModel(mname,mdata).then((rs)=>{
+                                
+                                router.push("/Model")
+                            })
+                            
                         }
                     },    
                 }
@@ -370,7 +376,7 @@ onMounted(() => {
     getModels().then((response) => {
         const obj = JSON.parse(response.data);
         obj.forEach(item => {
-            modelOptions.value.push({ "value": item.name, "label": item.name })
+            modelOptions.value.push({ "value": item.id, "label": item.name })
         });
         cmodel.value = modelOptions.value[0].value
     });

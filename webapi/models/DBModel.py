@@ -9,13 +9,13 @@ class DBModel (DataBase):
         DataBase.__init__(self)
     
     def getData(self):
-        sql = "select name,data from ModelData"
+        sql = "select id,name,data from ModelData"
         print(sql)
         df = pd.read_sql_query(text(sql), self.engine_ts.connect())
         return df
     
-    def getDataByName(self,name):
-        sql = "select name,data from ModelData where name='"+name+"'"
+    def getDataById(self,id):
+        sql = "select name,data from ModelData where id="+id+""
         print(sql)
         df = pd.read_sql_query(text(sql), self.engine_ts.connect())
         return df

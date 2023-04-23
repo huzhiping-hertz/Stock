@@ -5,20 +5,28 @@
 
 
             <CardBox class="mb-6 ">
-
                 <el-form  :inline="true" :model="formInline" class="demo-form-inline">
-                    <el-form-item label="数据模型">
-                        <el-select v-model="modelName" placeholder="Select" size="large">
+                    <el-form-item label="开始时间">
+                        <el-date-picker v-model="dateStart" type="date" placeholder="Pick a day" size="large"
+                            value-format="YYYYMMDD" />
+                    </el-form-item>
+                    <el-form-item label="结束时间">
+                        <el-date-picker v-model="dateStop" type="date" placeholder="Pick a day" size="large"
+                            value-format="YYYYMMDD" />
+                    </el-form-item>
+                    <el-form-item label="股票代码">
+                        <el-select v-model="scode" placeholder="Select" size="large">
                             <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
                         </el-select>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" @click="onChange" size="large">查看模型</el-button>
+                        <el-button type="primary" @click="onChange" size="large">查看数据</el-button>
                     </el-form-item>
                     <el-form-item>
-                        <el-button type="primary" @click="onCreate" size="large">创建模型</el-button>
+                        <el-button type="primary" @click="onChange" size="large">生成模型</el-button>
                     </el-form-item>
                 </el-form>
+
 
             </CardBox>
 
@@ -44,7 +52,6 @@ import CardBox from "@/components/CardBox.vue";
 import * as echarts from 'echarts';
 import { ref, unref, onMounted, reactive } from 'vue'
 import { getModels, getModelById } from '@/api/DataModel';
-import { RouterView, useRouter } from "vue-router";
 
 const domChart = ref(null);
 let chart;
@@ -54,11 +61,10 @@ const options = ref([]);
 let rs = getModels();
 const infos = ref("");
 const modelName = ref();
-const router= new useRouter();
 
 function onChange() {
 
-    getModelById(modelName.value).then((response) => {
+    getModelByName(modelName.value).then((response) => {
 
         const obj = JSON.parse(response.data);
         if (obj.length > 0) {
@@ -102,18 +108,13 @@ function onChange() {
 
 }
 
-function onCreate(){
-    router.push("/model/create")
-}
-
-
 onMounted(() => {
 
 
     getModels().then((response) => {
         const obj = JSON.parse(response.data);
         obj.forEach(item => {
-            options.value.push({ "value": item.id, "label": item.name })
+            options.value.push({ "value": item.name, "label": item.name })
         });
         modelName.value = options.value[0].value
     });

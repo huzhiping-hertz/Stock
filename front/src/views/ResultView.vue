@@ -50,7 +50,7 @@ import SectionMain from "@/components/SectionMain.vue";
 import CardBox from "@/components/CardBox.vue";
 import { ref, unref, onMounted, computed } from 'vue'
 import { getStockCodes, getStockData, getStockCorr } from '@/api/StockCodesApi';
-import { getModels, getModelByName } from '@/api/DataModel';
+import { getModels, getModelById } from '@/api/DataModel';
 
 const codes = ref()
 const cmodel = ref()

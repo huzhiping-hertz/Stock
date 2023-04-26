@@ -3,7 +3,7 @@ from controllers.ModelController import ModelController
 import numpy as np
 import pandas as pd
 import json
-from models.ParamModel import ParamModel
+from models.ParamModel import ParamModel,ParamUpdateModel
 from models.DBModel import DBModel
 
 router = APIRouter()
@@ -28,3 +28,12 @@ def save_model(item:ParamModel):
     df=pd.read_json(item.json(),orient="index")
     db.writeData(df.T)
     
+@router.post("/model/update")
+def update_model(item:ParamUpdateModel):
+    db=DBModel()
+    db.updateData(item.id,item.data)
+
+@router.get("/model/delete/{id}")
+def delete_models(id):
+    model=DBModel()
+    df=model.deleteDataById(id)

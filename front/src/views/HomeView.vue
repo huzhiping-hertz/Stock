@@ -16,7 +16,7 @@
                     </el-form-item>
                     <el-form-item label="股票代码">
                         <el-select v-model="scode" placeholder="Select" size="large">
-                            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
+                            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item" />
                         </el-select>
                     </el-form-item>
                     <el-form-item label="数据模型">
@@ -35,7 +35,7 @@
         </SectionMain>
 
         <SectionMain>
-
+           
             <!-- 
             <CardBox class="mb-6">
                 <CandalStick />
@@ -60,6 +60,7 @@ import { getStockCodes, getStockData } from '@/api/StockCodesApi';
 import { getModels, getModelById,saveModel } from '@/api/DataModel';
 import { RouterView, useRouter } from "vue-router";
 import { ref, unref, watch, computed, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 
 const dateStart = ref('')
 const dateStop = ref('')
@@ -84,9 +85,16 @@ let modelMax=0;
 let pts;
 
 
+const saveModelInfo = () => {
+  ElMessage({
+    message: '保存成功！',
+    type: 'success',
+  })
+}
+
 function onSearch() {
 
-    getStockData(scode.value, dateStart.value, dateStop.value, cmodel.value).then((response) => {
+    getStockData(scode.value.value, dateStart.value, dateStop.value, cmodel.value).then((response) => {
 
         const rawData = JSON.parse(response.data)
         //初始化图表
@@ -114,6 +122,10 @@ function onSearch() {
         });
         const datestr = rawData.map(function (item) {
             return item[0];
+        });
+
+        const dataclose = rawData.map(function (item) {
+            return item[2];
         });
 
         const data = rawData.map(function (item) {
@@ -195,11 +207,17 @@ function onSearch() {
                         icon: 'path://M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
                         onclick: function(){
                             
-                            var mname=options[""];
-                            var mdata="";
-                            saveModel(mname,mdata).then((rs)=>{
+                            var mname=scode.value.label+"-"+modelMin+"-"+modelMax
+                            var mdata=dataclose.slice(pts[0],pts[pts.length-1])
+                            var min=Math.min(...mdata)
+                            var max=Math.max(...mdata)
+                            var normal_data=mdata.map(x=>((x-min)/(max-min)).toFixed(2))
+                            normal_data=normal_data.toString()
+                            saveModel(mname,normal_data).then((rs)=>{
                                 
-                                router.push("/Model")
+                                //router.push("/Model")
+                                InitModel()
+                                saveModelInfo()
                             })
                             
                         }
@@ -353,7 +371,17 @@ function onSearch() {
 
 }
 
-
+function InitModel()
+{
+    modelOptions.value.splice(0,modelOptions.value.length)
+    getModels().then((response) => {
+        const obj = JSON.parse(response.data);
+        obj.forEach(item => {
+            modelOptions.value.push({ "value": item.id, "label": item.name })
+        });
+        cmodel.value = modelOptions.value[0].value
+    });
+}
 
 onMounted(() => {
 
@@ -370,16 +398,17 @@ onMounted(() => {
         obj.forEach(item => {
             options.value.push({ "value": item.ts_code, "label": item.name })
         });
-        scode.value = options.value[0].value
+        scode.value = options.value[0]
     });
 
-    getModels().then((response) => {
-        const obj = JSON.parse(response.data);
-        obj.forEach(item => {
-            modelOptions.value.push({ "value": item.id, "label": item.name })
-        });
-        cmodel.value = modelOptions.value[0].value
-    });
+    InitModel()
+    // getModels().then((response) => {
+    //     const obj = JSON.parse(response.data);
+    //     obj.forEach(item => {
+    //         modelOptions.value.push({ "value": item.id, "label": item.name })
+    //     });
+    //     cmodel.value = modelOptions.value[0].value
+    // });
 
 
 

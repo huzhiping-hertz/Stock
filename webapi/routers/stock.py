@@ -20,13 +20,13 @@ def get_stock_codes():
     return rs
 
 ##获取股票信息
-@router.get("/stock/qfq/{code}/{start}/{stop}/{mname}")
-def get_model_by_name(code,start,stop,mname):
+@router.get("/stock/qfq/{code}/{start}/{stop}/{mid}")
+def get_model_by_name(code,start,stop,mid):
     model=DBQFQ()
     df=model.readData(code,start,stop)
     
     modelObj=DBModel()
-    modelDF=modelObj.getDataByName(mname)
+    modelDF=modelObj.getDataById(mid)
 
     global corr_vals 
     corr_vals= modelDF.iat[0,1].split(",")

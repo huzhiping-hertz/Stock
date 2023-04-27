@@ -28,13 +28,12 @@ def get_model_by_name(code,start,stop,mid):
     modelObj=DBModel()
     modelDF=modelObj.getDataById(mid)
 
-    global corr_vals 
     corr_vals= modelDF.iat[0,1].split(",")
     corr_vals=list(map(float,corr_vals))
     corr_vals=np.array(list(map(float,corr_vals)))
-    pearsonr_corr= df.loc[:,"close"].rolling(window=len(corr_vals)).apply(get_pearsonr)
-    spearmanr_corr= df.loc[:,"close"].rolling(window=len(corr_vals)).apply(get_spearmanr)
-    kendalltau_corr= df.loc[:,"close"].rolling(window=len(corr_vals)).apply(get_kendalltau)
+    pearsonr_corr= df.loc[:,"close"].rolling(window=len(corr_vals)).apply(get_pearsonr,args=(corr_vals,))
+    spearmanr_corr= df.loc[:,"close"].rolling(window=len(corr_vals)).apply(get_spearmanr,args=(corr_vals,))
+    kendalltau_corr= df.loc[:,"close"].rolling(window=len(corr_vals)).apply(get_kendalltau,args=(corr_vals,))
     df=pd.merge(df,pearsonr_corr,left_index=True,right_index=True)
     df=pd.merge(df,spearmanr_corr,left_index=True,right_index=True)
     df=pd.merge(df,kendalltau_corr,left_index=True,right_index=True)
@@ -54,9 +53,9 @@ def syn_stock_data(code, start, stop):
     
 def get_pearsonr(vals,corr_vals):
     return round(pearsonr(vals, corr_vals)[0],2)
-def get_spearmanr(vals):
+def get_spearmanr(vals,corr_vals):
     return round(spearmanr(vals, corr_vals)[0],2)
-def get_kendalltau(vals):
+def get_kendalltau(vals,corr_vals):
     return round(kendalltau(vals, corr_vals)[0],2)
 
 ##计算相关性

@@ -52,7 +52,7 @@ def syn_stock_data(code, start, stop):
     db=DBQFQ()
     db.writeData(qfqData)
     
-def get_pearsonr(vals):
+def get_pearsonr(vals,corr_vals):
     return round(pearsonr(vals, corr_vals)[0],2)
 def get_spearmanr(vals):
     return round(spearmanr(vals, corr_vals)[0],2)
@@ -92,9 +92,9 @@ def get_stock_models_correlation(item:ParamCorrelation):
     model=DBQFQ()
     df=model.readLastData(item.code,50)
     
-    global corr_vals 
+    #global corr_vals
     for ind in modelDF.index:
-
+         
         corr_vals= modelDF["data"][ind].split(",")
         corr_vals=list(map(float,corr_vals))
         corr_vals=np.array(list(map(float,corr_vals)))
@@ -102,7 +102,7 @@ def get_stock_models_correlation(item:ParamCorrelation):
         # model=DBQFQ()
         # df=model.readLastData(item.code,len(corr_vals))
         
-        corr= df.iloc[:,1:2].rolling(window=len(corr_vals)).apply(get_pearsonr)
+        corr= df.iloc[:,1:2].rolling(window=len(corr_vals)).apply(get_pearsonr,args=(corr_vals,))
         df=pd.merge(df,corr,left_index=True,right_index=True,suffixes=('', '_'+str(modelDF["id"][ind])))
         
         # df=df.fillna(0)

@@ -3,7 +3,7 @@ from controllers.StockController import StockController
 import numpy as np
 import pandas as pd
 from scipy.stats import pearsonr,spearmanr,kendalltau
-
+from models.ParamModel import ParamCorrelation
 from models.DBBasic import DBBasic;
 from models.DBQFQ import DBQFQ
 from models.Stock import Stock;
@@ -64,7 +64,7 @@ def get_kendalltau(vals):
 def get_stock_corr(code,mname):
 
     modelObj=DBModel()
-    modelDF=modelObj.getDataByName(mname)
+    modelDF=modelObj.getDataById(mname)
     global corr_vals 
     corr_vals= modelDF.iat[0,1].split(",")
     corr_vals=list(map(float,corr_vals))
@@ -73,10 +73,43 @@ def get_stock_corr(code,mname):
     model=DBQFQ()
     df=model.readLastData(code,len(corr_vals))
     
-    corr= df.loc[:,"pre_close"].rolling(window=len(corr_vals)).apply(get_correlation)
-    
+    corr= df.loc[:,"close"].rolling(window=len(corr_vals)).apply(get_pearsonr)
     df=pd.merge(df,corr,left_index=True,right_index=True)
-    df=df.fillna(0)
 
+    df=df.fillna(0)
+    print(df)
+    rs=df.iloc[-1].to_json()
+    return rs
+
+##计算相关性
+@router.post("/stock/corr")
+def get_stock_models_correlation(item:ParamCorrelation):
+
+    modelObj=DBModel()
+    modelDF=modelObj.getDataByIds(item.models)
+    print(modelDF)
+    
+    model=DBQFQ()
+    df=model.readLastData(item.code,50)
+    
+    global corr_vals 
+    for ind in modelDF.index:
+
+        corr_vals= modelDF["data"][ind].split(",")
+        corr_vals=list(map(float,corr_vals))
+        corr_vals=np.array(list(map(float,corr_vals)))
+        #print(corr_vals)
+        # model=DBQFQ()
+        # df=model.readLastData(item.code,len(corr_vals))
+        
+        corr= df.iloc[:,1:2].rolling(window=len(corr_vals)).apply(get_pearsonr)
+        df=pd.merge(df,corr,left_index=True,right_index=True,suffixes=('', '_'+str(modelDF["id"][ind])))
+        
+        # df=df.fillna(0)
+        # print(df)
+        # rs=df.iloc[-1].to_json()
+        # print(rs)
+    df["sum"]=df.iloc[:,2:].sum(axis=1)
+    print(df)
     rs=df.iloc[-1].to_json()
     return rs

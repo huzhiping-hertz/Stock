@@ -21,6 +21,12 @@ class DBModel (DataBase):
         df = pd.read_sql_query(text(sql), self.engine_ts.connect())
         return df
     
+    def getDataByIds(self,ids):
+        sql = "select id,name,data from ModelData where id in ("+ids+")"
+        print(sql)
+        df = pd.read_sql_query(text(sql), self.engine_ts.connect())
+        return df
+    
     def getNames(self):
         sql = "select name from ModelData"
         print(sql)

@@ -12,8 +12,8 @@
             </el-select>
           </el-form-item>
           <el-form-item label="数据模型">
-            <el-select v-model="cmodel" placeholder="Select" size="large">
-              <el-option v-for="item in modelOptions" :key="item.value" :label="item.label" :value="item.value" />
+            <el-select v-model="cmodels" placeholder="Select" size="large" @change="onModelChanged" multiple>
+              <el-option v-for="item in modelOptions" :key="item.value" :label="item.label" :value="item" />
             </el-select>
           </el-form-item>
           <el-form-item>
@@ -32,10 +32,16 @@
         <el-table :data="tableData" :default-sort="{ prop: 'corr', order: 'descending' }" style="width: 100%">
           <el-table-column label="股票名称" prop="sname" />
           <el-table-column label="股票代码" prop="scode" />
-          <el-table-column label="价格" prop="pre_close_x" />
+          <el-table-column label="收盘价格" prop="close" />
           <el-table-column label="交易日期" prop="trade_date" />
-          <el-table-column label="模型相关性" prop="pre_close_y" sortable />
 
+          
+          <el-table-column v-for="column in columns" 
+                     :key="column.prop"
+                     :prop="column.prop"
+                     :label="column.label" sortable>
+          </el-table-column>
+          <el-table-column label="总计" prop="sum" sortable />
         </el-table>
       </CardBox>
 
@@ -49,28 +55,51 @@ import LayoutMain from "@/layouts/LayoutMain.vue";
 import SectionMain from "@/components/SectionMain.vue";
 import CardBox from "@/components/CardBox.vue";
 import { ref, unref, onMounted, computed } from 'vue'
-import { getStockCodes, getStockData, getStockCorr } from '@/api/StockCodesApi';
+import { getStockCodes, getStockData, getStockCorr,getStockCorrelations } from '@/api/StockCodesApi';
 import { getModels, getModelById } from '@/api/DataModel';
 
 const codes = ref()
-const cmodel = ref()
+const columns=ref([])
+const cmodels = ref()
 const options = ref([]);
 const modelOptions = ref([]);
 
 const tableData = ref([])
 
+function onModelChanged(){
+  columns.value=[]
+  cmodels.value.forEach((cmodel, index) => {
+    
+    columns.value.push({"label":cmodel.label,"prop":"close_"+cmodel.value})
+  })
+
+}
+
 function onCaculate() {
-  tableData.value=[]
+  tableData.value = []
+  let models=[]
+  cmodels.value.forEach((cmodel, index) => {
+    models.push(cmodel.value)
+  })
   codes.value.forEach((item, index) => {
 
-    getStockCorr(item.value, cmodel.value).then((response) => {
+      getStockCorrelations(item.value,models.toString()).then((response)=>{
+            var row = JSON.parse(response.data)
+            row.scode = item.value
+            row.sname = item.label
+            tableData.value.push(row)
+      })
+    // cmodels.value.forEach((cmodel, cindex) => {
+    //   getStockCorr(item.value, cmodel.value).then((response) => {
 
-      var row=JSON.parse(response.data)
-      row.scode=item.value
-      row.sname=item.label
-      tableData.value.push(row)
+    //     var row = JSON.parse(response.data)
+    //     row.scode = item.value
+    //     row.sname = item.label
+    //     row.mname=cmodel.label
+    //     tableData.value.push(row)
 
-    })
+    //   })
+    // })
 
   })
 }
@@ -89,7 +118,7 @@ onMounted(() => {
   getModels().then((response) => {
     const obj = JSON.parse(response.data);
     obj.forEach(item => {
-      modelOptions.value.push({ "value": item.name, "label": item.name })
+      modelOptions.value.push({ "value": item.id, "label": item.name })
     });
   });
 

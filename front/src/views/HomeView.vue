@@ -35,7 +35,7 @@
         </SectionMain>
 
         <SectionMain>
-           
+
             <!-- 
             <CardBox class="mb-6">
                 <CandalStick />
@@ -57,10 +57,10 @@ import SectionMain from "@/components/SectionMain.vue";
 import CardBox from "@/components/CardBox.vue";
 import CandalStick from "@/components/Stocks/CandalStick.vue";
 import { getStockCodes, getStockData } from '@/api/StockCodesApi';
-import { getModels, getModelById,saveModel } from '@/api/DataModel';
+import { getModels, getModelById, saveModel } from '@/api/DataModel';
 import { RouterView, useRouter } from "vue-router";
 import { ref, unref, watch, computed, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const dateStart = ref('')
 const dateStop = ref('')
@@ -69,6 +69,8 @@ const cmodel = ref()
 const options = ref([]);
 const modelOptions = ref([]);
 const router = useRouter();
+const dialogFormVisible = ref(false)
+const model_name = ref()
 
 const props = defineProps({
     data: {
@@ -80,17 +82,10 @@ const props = defineProps({
 const domChart = ref(null);
 let chart;
 
-let modelMin=0;
-let modelMax=0;
+let modelMin = 0;
+let modelMax = 0;
 let pts;
 
-
-const saveModelInfo = () => {
-  ElMessage({
-    message: '保存成功！',
-    type: 'success',
-  })
-}
 
 function onSearch() {
 
@@ -197,31 +192,44 @@ function onSearch() {
             toolbox: {
                 feature: {
 
-                
+
                     brush: {
                         type: ['lineX']
                     },
-                    myModel:{
-                        show:true,
+                    myModel: {
+                        show: true,
                         title: "Save Data As Model",
                         icon: 'path://M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
-                        onclick: function(){
-                            
-                            var mname=scode.value.label+"-"+modelMin+"-"+modelMax
-                            var mdata=dataclose.slice(pts[0],pts[pts.length-1])
-                            var min=Math.min(...mdata)
-                            var max=Math.max(...mdata)
-                            var normal_data=mdata.map(x=>((x-min)/(max-min)).toFixed(2))
-                            normal_data=normal_data.toString()
-                            saveModel(mname,normal_data).then((rs)=>{
-                                
-                                //router.push("/Model")
-                                InitModel()
-                                saveModelInfo()
+                        onclick: function () {
+
+                            var mname = scode.value.label + "-" + modelMin + "-" + modelMax
+
+                            var mdata = dataclose.slice(pts[0], pts[pts.length - 1])
+                            var min = Math.min(...mdata)
+                            var max = Math.max(...mdata)
+                            var normal_data = mdata.map(x => ((x - min) / (max - min)).toFixed(2))
+                            normal_data = normal_data.toString()
+
+                            ElMessageBox.prompt('输入模型名称', '', {
+                                confirmButtonText: 'OK',
+                                cancelButtonText: 'Cancel'
+                            }).then(({ value }) => {
+
+                                saveModel(value, normal_data).then((rs) => {
+                                    //router.push("/Model")
+                                    InitModel()
+
+                                    // ElMessage({
+                                    //     type: 'success',
+                                    //     message: `Your email is:${value}`,
+                                    // })
+                                })
                             })
-                            
+
+
+
                         }
-                    },    
+                    },
                 }
             },
             brush: {
@@ -361,19 +369,18 @@ function onSearch() {
 
         chart.on('brushSelected', function (params) {
             // this shows an empty array - while it should be the range selected
-            pts=params.batch[0].selected[0].dataIndex;
-            modelMin=datestr[pts[0]];
-            modelMax=datestr[pts[pts.length-1]]
-            console.log(modelMin+"-"+modelMax)
+            pts = params.batch[0].selected[0].dataIndex;
+            modelMin = datestr[pts[0]];
+            modelMax = datestr[pts[pts.length - 1]]
+            console.log(modelMin + "-" + modelMax)
         });
 
     })
 
 }
 
-function InitModel()
-{
-    modelOptions.value.splice(0,modelOptions.value.length)
+function InitModel() {
+    modelOptions.value.splice(0, modelOptions.value.length)
     getModels().then((response) => {
         const obj = JSON.parse(response.data);
         obj.forEach(item => {

@@ -8,3 +8,7 @@ class ParamModel(BaseModel):
 class ParamUpdateModel(BaseModel):
     id: int
     data: str
+
+class ParamCorrelation(BaseModel):
+    code: str
+    models: str

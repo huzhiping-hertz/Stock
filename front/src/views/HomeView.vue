@@ -128,7 +128,7 @@ function onSearch() {
         });
 
         const pcorr = rawData.map(function (item) {
-            return item[5].toFixed(2);
+            return item[9].toFixed(2);
         });
         const scorr = rawData.map(function (item) {
             return item[6].toFixed(2);
@@ -136,10 +136,23 @@ function onSearch() {
         const kcorr = rawData.map(function (item) {
             return item[7].toFixed(2);
         });
+        const avg7 = rawData.map(function (item) {
+            return item[10].toFixed(2);
+        });
+        const avg29 = rawData.map(function (item) {
+            return item[11].toFixed(2);
+        });
+        const avg89 = rawData.map(function (item) {
+            return item[12].toFixed(2);
+        });
+        const avg344 = rawData.map(function (item) {
+            return item[13].toFixed(2);
+        });
 
         option = {
             legend: {
-                data: ['日K', '7日均线', '29日均线', '89日均线','344日均线', '皮尔逊相关性'],
+                data: ['日K', '7日均线', '29日均线', '89日均线','344日均线', '日K-系数','7日-系数','29日-系数', '89日-系数', '344日-系数'],
+                selected:{ '日K':true, '7日均线':false, '29日均线':false, '89日均线':false,'344日均线':false, '日K-系数':true,'7日-系数':false,'29日-系数':false, '89日-系数':false, '344日-系数':false},
                 inactiveColor: '#777'
             },
             tooltip: {
@@ -271,7 +284,7 @@ function onSearch() {
             series: [
                 {
                     type: 'candlestick',
-                    name: 'Day',
+                    name: '日K',
                     data: data,
                     itemStyle: {
                         color: '#FD1050',
@@ -321,7 +334,7 @@ function onSearch() {
                     }
                 },
                 {
-                    name: '皮尔逊相关性',
+                    name: '日K-系数',
                     type: 'line',
                     xAxisIndex: 1,
                     yAxisIndex: 1,
@@ -337,40 +350,74 @@ function onSearch() {
                     },
                     data: pcorr,
                 },
-                // {
-                //     name: '斯皮尔曼相关性',
-                //     type: 'line',
-                //     xAxisIndex: 1,
-                //     yAxisIndex: 1,
-                //     symbolSize: 5,
-                //     lineStyle: {
-                //         width: 1
-                //     },
-                //     markPoint: {
-                //         data: [
-                //             { type: 'max', name: 'Max' },
-                //             { type: 'min', name: 'Min' }
-                //         ]
-                //     },
-                //     data: scorr,
-                // },
-                // {
-                //     name: '肯德尔相关性',
-                //     type: 'line',
-                //     xAxisIndex: 1,
-                //     yAxisIndex: 1,
-                //     symbolSize: 5,
-                //     lineStyle: {
-                //         width: 1
-                //     },
-                //     markPoint: {
-                //         data: [
-                //             { type: 'max', name: 'Max' },
-                //             { type: 'min', name: 'Min' }
-                //         ]
-                //     },
-                //     data: kcorr,
-                // }
+                {
+                    name: '7日-系数',
+                    type: 'line',
+                    xAxisIndex: 1,
+                    yAxisIndex: 1,
+                    symbolSize: 5,
+                    lineStyle: {
+                        width: 1
+                    },
+                    markPoint: {
+                        data: [
+                            { type: 'max', name: 'Max' },
+                            { type: 'min', name: 'Min' }
+                        ]
+                    },
+                    data: avg7,
+                },
+                {
+                    name: '29日-系数',
+                    type: 'line',
+                    xAxisIndex: 1,
+                    yAxisIndex: 1,
+                    symbolSize: 5,
+                    lineStyle: {
+                        width: 1
+                    },
+                    markPoint: {
+                        data: [
+                            { type: 'max', name: 'Max' },
+                            { type: 'min', name: 'Min' }
+                        ]
+                    },
+                    data: avg29,
+                },
+                {
+                    name: '89日-系数',
+                    type: 'line',
+                    xAxisIndex: 1,
+                    yAxisIndex: 1,
+                    symbolSize: 5,
+                    lineStyle: {
+                        width: 1
+                    },
+                    markPoint: {
+                        data: [
+                            { type: 'max', name: 'Max' },
+                            { type: 'min', name: 'Min' }
+                        ]
+                    },
+                    data: avg89,
+                },
+                {
+                    name: '344日-系数',
+                    type: 'line',
+                    xAxisIndex: 1,
+                    yAxisIndex: 1,
+                    symbolSize: 5,
+                    lineStyle: {
+                        width: 1
+                    },
+                    markPoint: {
+                        data: [
+                            { type: 'max', name: 'Max' },
+                            { type: 'min', name: 'Min' }
+                        ]
+                    },
+                    data: avg344,
+                }
             ]
         };
         option && chart.setOption(option);

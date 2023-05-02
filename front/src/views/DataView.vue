@@ -2,11 +2,8 @@
 <template>
     <LayoutMain>
 
-        <SectionMain>
-
-
-            <CardBox class="mb-6">
-                <FormField label="">
+            <CardBox >
+              
                     <el-form :inline="true" :model="formInline" class="demo-form-inline">
                         <el-form-item label="开始时间">
                             <el-date-picker v-model="dateStart" type="date" placeholder="Pick a day" size="large"  value-format="YYYYMMDD"/>
@@ -25,14 +22,14 @@
                         </el-form-item>
                     </el-form>
 
-                </FormField>
+ 
 
             </CardBox>
 
-            <CardBox class="mb-6">
+            <CardBox >
                 <el-progress :text-inside="true" :stroke-width="26" :percentage="percent" />               
             </CardBox>
-        </SectionMain>
+        
 
 
     </LayoutMain>

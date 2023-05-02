@@ -31,12 +31,34 @@ def get_model_by_name(code,start,stop,mid):
     corr_vals= modelDF.iat[0,1].split(",")
     corr_vals=list(map(float,corr_vals))
     corr_vals=np.array(list(map(float,corr_vals)))
+    
+    avg= round(df.loc[:,"close"].rolling(7).mean(),2)
+    df=pd.merge(df,avg,left_index=True,right_index=True,suffixes=('', '_7_avg'))
+    
+    avg= round(df.loc[:,"close"].rolling(29).mean(),2)
+    df=pd.merge(df,avg,left_index=True,right_index=True,suffixes=('', '_29_avg'))
+    
+    avg= round(df.loc[:,"close"].rolling(89).mean(),2)
+    df=pd.merge(df,avg,left_index=True,right_index=True,suffixes=('', '_89_avg'))
+    
+    avg= round(df.loc[:,"close"].rolling(344).mean(),2)
+    df=pd.merge(df,avg,left_index=True,right_index=True,suffixes=('', '_344_avg'))
+    
     pearsonr_corr= df.loc[:,"close"].rolling(window=len(corr_vals)).apply(get_pearsonr,args=(corr_vals,))
-    spearmanr_corr= df.loc[:,"close"].rolling(window=len(corr_vals)).apply(get_spearmanr,args=(corr_vals,))
-    kendalltau_corr= df.loc[:,"close"].rolling(window=len(corr_vals)).apply(get_kendalltau,args=(corr_vals,))
-    df=pd.merge(df,pearsonr_corr,left_index=True,right_index=True)
-    df=pd.merge(df,spearmanr_corr,left_index=True,right_index=True)
-    df=pd.merge(df,kendalltau_corr,left_index=True,right_index=True)
+    # spearmanr_corr= df.loc[:,"close"].rolling(window=len(corr_vals)).apply(get_spearmanr,args=(corr_vals,))
+    # kendalltau_corr= df.loc[:,"close"].rolling(window=len(corr_vals)).apply(get_kendalltau,args=(corr_vals,))
+    df=pd.merge(df,pearsonr_corr,left_index=True,right_index=True,suffixes=('', '_c'))
+    # df=pd.merge(df,spearmanr_corr,left_index=True,right_index=True)
+    # df=pd.merge(df,kendalltau_corr,left_index=True,right_index=True)
+    
+    corr= df.loc[:,"close_7_avg"].rolling(window=len(corr_vals)).apply(get_pearsonr,args=(corr_vals,))
+    df=pd.merge(df,corr,left_index=True,right_index=True,suffixes=('', '_c'))
+    corr= df.loc[:,"close_29_avg"].rolling(window=len(corr_vals)).apply(get_pearsonr,args=(corr_vals,))
+    df=pd.merge(df,corr,left_index=True,right_index=True,suffixes=('', '_c'))
+    corr= df.loc[:,"close_89_avg"].rolling(window=len(corr_vals)).apply(get_pearsonr,args=(corr_vals,))
+    df=pd.merge(df,corr,left_index=True,right_index=True,suffixes=('', '_c'))
+    corr= df.loc[:,"close_344_avg"].rolling(window=len(corr_vals)).apply(get_pearsonr,args=(corr_vals,))
+    df=pd.merge(df,corr,left_index=True,right_index=True,suffixes=('', '_c'))
     
     df=df.fillna(0)
     print(df)

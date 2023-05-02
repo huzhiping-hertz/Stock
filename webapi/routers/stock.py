@@ -57,6 +57,8 @@ def get_spearmanr(vals,corr_vals):
     return round(spearmanr(vals, corr_vals)[0],2)
 def get_kendalltau(vals,corr_vals):
     return round(kendalltau(vals, corr_vals)[0],2)
+def get_ma(vals,daycount):
+    return 0
 
 ##计算相关性
 @router.get("/stock/corr/{code}/{mname}")
@@ -64,21 +66,51 @@ def get_stock_corr(code,mname):
 
     modelObj=DBModel()
     modelDF=modelObj.getDataById(mname)
-    global corr_vals 
+
     corr_vals= modelDF.iat[0,1].split(",")
     corr_vals=list(map(float,corr_vals))
     corr_vals=np.array(list(map(float,corr_vals)))
     
     model=DBQFQ()
-    df=model.readLastData(code,len(corr_vals))
-    
-    corr= df.loc[:,"close"].rolling(window=len(corr_vals)).apply(get_pearsonr)
-    df=pd.merge(df,corr,left_index=True,right_index=True)
+    df=model.readLastData(code,len(corr_vals)+350)
 
+    avg= round(df.loc[:,"close"].rolling(7).mean(),2)
+    df=pd.merge(df,avg,left_index=True,right_index=True,suffixes=('', '_7_avg'))
+    
+    avg= round(df.loc[:,"close"].rolling(29).mean(),2)
+    df=pd.merge(df,avg,left_index=True,right_index=True,suffixes=('', '_29_avg'))
+    
+    avg= round(df.loc[:,"close"].rolling(89).mean(),2)
+    df=pd.merge(df,avg,left_index=True,right_index=True,suffixes=('', '_89_avg'))
+    
+    avg= round(df.loc[:,"close"].rolling(344).mean(),2)
+    df=pd.merge(df,avg,left_index=True,right_index=True,suffixes=('', '_344_avg'))
+
+    corr= df.loc[:,"open"].rolling(window=len(corr_vals)).apply(get_pearsonr,args=(corr_vals,))
+    df=pd.merge(df,corr,left_index=True,right_index=True,suffixes=('', '_c'))
+    corr= df.loc[:,"high"].rolling(window=len(corr_vals)).apply(get_pearsonr,args=(corr_vals,))
+    df=pd.merge(df,corr,left_index=True,right_index=True,suffixes=('', '_c'))
+    corr= df.loc[:,"low"].rolling(window=len(corr_vals)).apply(get_pearsonr,args=(corr_vals,))
+    df=pd.merge(df,corr,left_index=True,right_index=True,suffixes=('', '_c'))
+    corr= df.loc[:,"close"].rolling(window=len(corr_vals)).apply(get_pearsonr,args=(corr_vals,))
+    df=pd.merge(df,corr,left_index=True,right_index=True,suffixes=('', '_c'))
+    
+    corr= df.loc[:,"close_7_avg"].rolling(window=len(corr_vals)).apply(get_pearsonr,args=(corr_vals,))
+    df=pd.merge(df,corr,left_index=True,right_index=True,suffixes=('', '_c'))
+    corr= df.loc[:,"close_29_avg"].rolling(window=len(corr_vals)).apply(get_pearsonr,args=(corr_vals,))
+    df=pd.merge(df,corr,left_index=True,right_index=True,suffixes=('', '_c'))
+    corr= df.loc[:,"close_89_avg"].rolling(window=len(corr_vals)).apply(get_pearsonr,args=(corr_vals,))
+    df=pd.merge(df,corr,left_index=True,right_index=True,suffixes=('', '_c'))
+    corr= df.loc[:,"close_344_avg"].rolling(window=len(corr_vals)).apply(get_pearsonr,args=(corr_vals,))
+    df=pd.merge(df,corr,left_index=True,right_index=True,suffixes=('', '_c'))
+
+     
+    df["sum"]=df.iloc[:,9:].sum(axis=1)
     df=df.fillna(0)
     print(df)
     rs=df.iloc[-1].to_json()
     return rs
+
 
 ##计算相关性
 @router.post("/stock/corr")

@@ -56,8 +56,38 @@ const menuClick = (event, item) => {
 <template>
   <div class="common-layout">
     <el-container>
-      <el-aside width="250px"><SideMenu></SideMenu></el-aside>
-      <el-main><slot /></el-main>
-    </el-container>
-  </div>
-</template>
+
+      <el-header>
+        <el-menu mode="horizontal" :default-active="activeIndex"  text-color="#fff" active-text-color="#ffd04b" router="true">
+
+          <el-menu-item index="/">
+            <el-icon><icon-menu /></el-icon>
+            <span>数据分析</span>
+          </el-menu-item>
+          <el-menu-item index="/model">
+            <el-icon>
+              <document />
+            </el-icon>
+            <span>数据模型</span>
+          </el-menu-item>
+          <el-menu-item index="/data">
+            <el-icon>
+              <setting />
+            </el-icon>
+            <span>数据同步</span>
+          </el-menu-item>
+          <el-menu-item index="/process">
+            <el-icon>
+              <setting />
+            </el-icon>
+            <span>批量计算</span>
+          </el-menu-item>
+        </el-menu>
+      </el-header>
+
+
+      <el-main>
+        <slot />
+      </el-main>
+  </el-container>
+</div></template>

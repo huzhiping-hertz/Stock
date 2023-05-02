@@ -13,6 +13,6 @@ class DBBasic(DataBase):
         print(res)
 
     def readData(self):
-        sql = "SELECT ts_code,name FROM StockBasic limit 20"
+        sql = "SELECT ts_code,name FROM StockBasic"
         df = pd.read_sql_query(text(sql), self.engine_ts.connect())
         return df

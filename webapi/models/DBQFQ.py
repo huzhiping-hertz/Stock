@@ -19,7 +19,7 @@ class DBQFQ (DataBase):
         return df
     
     def readLastData(self,ts_code,num):
-        sql = "select trade_date,close from (SELECT * FROM QFQData where ts_code='"+ts_code+"' order by trade_date desc limit "+str(num)+") tmp order by trade_date"
+        sql = "select trade_date,open,high,low,close from (SELECT * FROM QFQData where ts_code='"+ts_code+"' order by trade_date desc limit "+str(num)+") tmp order by trade_date"
         df = pd.read_sql_query(text(sql), self.engine_ts.connect())
         return df
 

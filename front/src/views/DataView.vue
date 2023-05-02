@@ -80,7 +80,7 @@ onMounted(()=>{
 
         const obj = JSON.parse(response.data);
         obj.forEach(item => {
-            options.value.push({ "value": item.ts_code, "label": item.name })
+            options.value.push({ "value": item.ts_code, "label": item.name+"_"+item.ts_code })
         });
     });
 

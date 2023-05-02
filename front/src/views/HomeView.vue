@@ -15,7 +15,7 @@
                             value-format="YYYYMMDD" />
                     </el-form-item>
                     <el-form-item label="股票代码">
-                        <el-select v-model="scode" placeholder="Select" size="large">
+                        <el-select v-model="scode" placeholder="Select" size="large" filterable>
                             <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item" />
                         </el-select>
                     </el-form-item>
@@ -139,7 +139,7 @@ function onSearch() {
 
         option = {
             legend: {
-                data: ['日K', '5日均线', '10日均线', '20日均线', '皮尔逊相关性', '斯皮尔曼相关性', '肯德尔相关性'],
+                data: ['日K', '7日均线', '29日均线', '89日均线','344日均线', '皮尔逊相关性'],
                 inactiveColor: '#777'
             },
             tooltip: {
@@ -281,9 +281,9 @@ function onSearch() {
                     }
                 },
                 {
-                    name: '5日均线',
+                    name: '7日均线',
                     type: 'line',
-                    data: calculateMA(5, data),
+                    data: calculateMA(7, data),
                     smooth: true,
                     showSymbol: false,
                     lineStyle: {
@@ -291,9 +291,9 @@ function onSearch() {
                     }
                 },
                 {
-                    name: '10日均线',
+                    name: '29日均线',
                     type: 'line',
-                    data: calculateMA(10, data),
+                    data: calculateMA(29, data),
                     smooth: true,
                     showSymbol: false,
                     lineStyle: {
@@ -301,9 +301,19 @@ function onSearch() {
                     }
                 },
                 {
-                    name: '20日均线',
+                    name: '89日均线',
                     type: 'line',
-                    data: calculateMA(20, data),
+                    data: calculateMA(89, data),
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                },
+                {
+                    name: '344日均线',
+                    type: 'line',
+                    data: calculateMA(344, data),
                     smooth: true,
                     showSymbol: false,
                     lineStyle: {
@@ -327,40 +337,40 @@ function onSearch() {
                     },
                     data: pcorr,
                 },
-                {
-                    name: '斯皮尔曼相关性',
-                    type: 'line',
-                    xAxisIndex: 1,
-                    yAxisIndex: 1,
-                    symbolSize: 5,
-                    lineStyle: {
-                        width: 1
-                    },
-                    markPoint: {
-                        data: [
-                            { type: 'max', name: 'Max' },
-                            { type: 'min', name: 'Min' }
-                        ]
-                    },
-                    data: scorr,
-                },
-                {
-                    name: '肯德尔相关性',
-                    type: 'line',
-                    xAxisIndex: 1,
-                    yAxisIndex: 1,
-                    symbolSize: 5,
-                    lineStyle: {
-                        width: 1
-                    },
-                    markPoint: {
-                        data: [
-                            { type: 'max', name: 'Max' },
-                            { type: 'min', name: 'Min' }
-                        ]
-                    },
-                    data: kcorr,
-                }
+                // {
+                //     name: '斯皮尔曼相关性',
+                //     type: 'line',
+                //     xAxisIndex: 1,
+                //     yAxisIndex: 1,
+                //     symbolSize: 5,
+                //     lineStyle: {
+                //         width: 1
+                //     },
+                //     markPoint: {
+                //         data: [
+                //             { type: 'max', name: 'Max' },
+                //             { type: 'min', name: 'Min' }
+                //         ]
+                //     },
+                //     data: scorr,
+                // },
+                // {
+                //     name: '肯德尔相关性',
+                //     type: 'line',
+                //     xAxisIndex: 1,
+                //     yAxisIndex: 1,
+                //     symbolSize: 5,
+                //     lineStyle: {
+                //         width: 1
+                //     },
+                //     markPoint: {
+                //         data: [
+                //             { type: 'max', name: 'Max' },
+                //             { type: 'min', name: 'Min' }
+                //         ]
+                //     },
+                //     data: kcorr,
+                // }
             ]
         };
         option && chart.setOption(option);
@@ -401,7 +411,7 @@ onMounted(() => {
 
         const obj = JSON.parse(response.data);
         obj.forEach(item => {
-            options.value.push({ "value": item.ts_code, "label": item.name })
+            options.value.push({ "value": item.ts_code, "label": item.name+"_"+item.ts_code })
         });
         scode.value = options.value[0]
     });
